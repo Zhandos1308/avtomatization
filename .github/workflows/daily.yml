@@ -1,0 +1,55 @@
+name: stickman-piano
+
+on:
+  schedule:
+    - cron: "17 7 * * *"          # каждый день в 07:17 UTC (12:17 по Атырау). Можно добавить строки для 2-3 видео в день
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: "youtube,tiktok,instagram"
+        default: "youtube,tiktok,instagram"
+      dry_run:
+        description: "1 = только сгенерировать, не заливать"
+        default: "0"
+      count:
+        description: "Сколько видео за запуск"
+        default: "12"
+      style:
+        description: "hard | hop | piano | midi | mix"
+        default: "hard"
+
+jobs:
+  make-and-post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: ffmpeg и шрифты
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - run: pip install -r requirements.txt
+      - name: Сгенерировать и залить
+        run: python run.py
+        env:
+          PLATFORMS: ${{ github.event.inputs.platforms || 'youtube,tiktok,instagram' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+          COUNT: ${{ github.event.inputs.count || '12' }}
+          STYLE: ${{ github.event.inputs.style || 'hard' }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          TT_CLIENT_KEY: ${{ secrets.TT_CLIENT_KEY }}
+          TT_CLIENT_SECRET: ${{ secrets.TT_CLIENT_SECRET }}
+          TT_REFRESH_TOKEN: ${{ secrets.TT_REFRESH_TOKEN }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: out/*.mp4
+          retention-days: 1
