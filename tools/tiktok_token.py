@@ -8,7 +8,7 @@ import urllib.parse
 import requests
 
 key, secret, redirect = os.environ["TT_CLIENT_KEY"], os.environ["TT_CLIENT_SECRET"], os.environ["TT_REDIRECT_URI"]
-scope = "user.info.basic,video.upload,video.publish"
+scope = "user.info.basic,video.upload"
 url = "https://www.tiktok.com/v2/auth/authorize/?" + urllib.parse.urlencode({
     "client_key": key, "scope": scope, "response_type": "code", "redirect_uri": redirect, "state": "x"})
 print("1) Открой ссылку, войди в TikTok и разреши доступ:\n", url)
